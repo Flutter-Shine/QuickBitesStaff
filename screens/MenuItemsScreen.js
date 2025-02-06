@@ -33,6 +33,26 @@ const MenuItemsScreen = () => {
     return () => unsubscribe();
   }, []);
 
+  // Custom change handler for the price field.
+  // It allows digits and at most one decimal point.
+  const handlePriceChange = (text) => {
+    // Remove any characters except digits and period.
+    let formatted = text.replace(/[^0-9.]/g, '');
+    // Ensure only one decimal point is present.
+    const parts = formatted.split('.');
+    if (parts.length > 2) {
+      formatted = parts[0] + '.' + parts.slice(1).join('');
+    }
+    setFormPrice(formatted);
+  };
+
+  // Custom change handler for the stock field.
+  // It allows only digits (integers).
+  const handleStockChange = (text) => {
+    const formatted = text.replace(/\D/g, '');
+    setFormStock(formatted);
+  };
+
   const handleSubmit = async () => {
     if (!formName.trim() || !formPrice.trim() || !formStock.trim()) {
       Alert.alert('Error', 'Please fill in the required fields.');
@@ -130,8 +150,8 @@ const MenuItemsScreen = () => {
           stock={formStock}
           description={formDescription}
           onNameChange={setFormName}
-          onPriceChange={setFormPrice}
-          onStockChange={setFormStock}
+          onPriceChange={handlePriceChange}
+          onStockChange={handleStockChange}
           onDescriptionChange={setFormDescription}
           onSubmit={handleSubmit}
           onCancel={handleCancel}
