@@ -1,14 +1,14 @@
-// screens/PendingOrdersScreen.js
+// screens/PreparedOrdersScreen.js
 import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, StyleSheet, TouchableOpacity, Alert } from 'react-native';
-import { collection, onSnapshot, updateDoc, doc, writeBatch } from 'firebase/firestore';
+import { collection, onSnapshot, writeBatch, doc } from 'firebase/firestore';
 import { db } from '../services/firebaseConfig';
 
-const PendingOrdersScreen = () => {
+const PreparedOrdersScreen = () => {
   const [orders, setOrders] = useState([]);
 
   useEffect(() => {
-    const unsubscribe = onSnapshot(collection(db, 'pendingOrders'), (snapshot) => {
+    const unsubscribe = onSnapshot(collection(db, 'preparedOrders'), (snapshot) => {
       const ordersData = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
@@ -18,66 +18,67 @@ const PendingOrdersScreen = () => {
     return () => unsubscribe();
   }, []);
 
-  const handleMarkPrepared = (order) => {
+  const handleCancelOrder = (order) => {
     Alert.alert(
-      'Order Prepared?',
-      'Is the order prepared?',
+      'Cancel Order?',
+      'Do you want to cancel this order?',
       [
         { text: 'No', style: 'cancel' },
-        {
-          text: 'Yes',
+        { 
+          text: 'Yes', 
           onPress: async () => {
             try {
-              // Create a batch to perform atomic writes
               const batch = writeBatch(db);
 
-              // Reference for the new document in preparedOrders collection
-              const preparedRef = doc(collection(db, 'preparedOrders'));
-              // Prepare new data with updated status (and keep timeslot field)
-              const preparedData = { ...order, status: 'prepared' };
-              delete preparedData.id; // Remove the id property since it will be auto-generated
-              batch.set(preparedRef, preparedData);
+              // Reference for new document in canceledOrder collection
+              const canceledRef = doc(collection(db, 'canceledOrder'));
+              // Prepare data: update status to "canceled"
+              const canceledData = { ...order, status: 'canceled' };
+              // Remove the id property since it will be auto-generated in canceledOrder
+              delete canceledData.id;
+              batch.set(canceledRef, canceledData);
 
-              // Delete the document from pendingOrders
-              const pendingRef = doc(db, 'pendingOrders', order.id);
-              batch.delete(pendingRef);
+              // Delete the document from preparedOrders
+              const preparedRef = doc(db, 'preparedOrders', order.id);
+              batch.delete(preparedRef);
 
-              // Create a new notification document in the notifications collection
+              // Create a notification in the notifications collection
               const notificationRef = doc(collection(db, 'notifications'));
               const notificationData = {
                 userId: order.userId,
-                title: "Order Ready for Pickup!",
-                message: `Your order #${order.orderNumber} is now ready for pickup.`,
+                title: "Order Canceled",
+                message: `Your order #${order.orderNumber} has been canceled.`,
                 orderNumber: order.orderNumber,
                 timestamp: new Date(),
-                status: "unread",
-                timeslot: order.timeslot || "N/A"
+                status: "unread"
               };
               batch.set(notificationRef, notificationData);
 
-              // Commit the batch so that all operations happen atomically
               await batch.commit();
-              Alert.alert('Success', 'Order moved to prepared orders and notification created!');
+              Alert.alert('Success', 'Order canceled and notification sent!');
             } catch (error) {
               Alert.alert('Error', error.message);
             }
           },
-          style: 'default'
+          style: 'destructive'
         }
       ]
     );
   };
 
   const renderOrder = ({ item }) => {
-    // Extract the names from the items array (each element is a map)
+    // Extract item names from the items array (each element is a map)
     const itemNames = Array.isArray(item.items)
       ? item.items.map(orderItem => orderItem.name).join(', ')
       : 'No items';
 
     return (
-      <TouchableOpacity style={styles.orderContainer} onPress={() => handleMarkPrepared(item)}>
-        <Text style={styles.orderText}>Order ID: {item.id}</Text>
+      <TouchableOpacity 
+        style={styles.orderContainer} 
+        onPress={() => handleCancelOrder(item)}
+      >
         <Text style={styles.orderText}>Order Number: {item.orderNumber || 'N/A'}</Text>
+        <Text style={styles.orderText}>Order ID: {item.id}</Text>
         <Text style={styles.orderText}>Timeslot: {item.timeslot || 'N/A'}</Text>
         <Text style={styles.orderText}>Items: {itemNames}</Text>
         <Text style={styles.orderText}>
@@ -90,12 +91,13 @@ const PendingOrdersScreen = () => {
   return (
     <View style={styles.container}>
       {orders.length === 0 ? (
-        <Text style={styles.noOrdersText}>No pending orders</Text>
+        <Text style={styles.noOrdersText}>No prepared orders</Text>
       ) : (
         <FlatList
           data={orders}
           keyExtractor={(item) => item.id}
           renderItem={renderOrder}
+          contentContainerStyle={styles.listContent}
         />
       )}
     </View>
@@ -112,12 +114,16 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 20,
   },
+  listContent: {
+    paddingBottom: 16,
+  },
   orderContainer: {
     padding: 12,
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 6,
     marginBottom: 8,
+    backgroundColor: '#fafafa',
   },
   orderText: {
     fontSize: 16,
@@ -125,4 +131,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default PendingOrdersScreen;
+export default PreparedOrdersScreen;
