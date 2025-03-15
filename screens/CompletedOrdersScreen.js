@@ -5,7 +5,7 @@ import { View, Text, StyleSheet } from 'react-native';
 const CompletedOrdersScreen = () => {
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>Completed Orders Placeholder</Text>
+      <Text style={styles.text}>Completed Orders Feature In Development</Text>
     </View>
   );
 };

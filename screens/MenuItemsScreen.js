@@ -1,14 +1,7 @@
 // screens/MenuItemsScreen.js
 import React, { useState, useEffect } from 'react';
-import { View, Text, Button, FlatList, Alert, StyleSheet } from 'react-native';
-import {
-  collection,
-  addDoc,
-  onSnapshot,
-  deleteDoc,
-  updateDoc,
-  doc
-} from 'firebase/firestore';
+import { View, Text, FlatList, Alert, StyleSheet, TouchableOpacity } from 'react-native';
+import { collection, addDoc, onSnapshot, deleteDoc, updateDoc, doc } from 'firebase/firestore';
 import { db } from '../services/firebaseConfig';
 import MenuItemRow from '../components/MenuItemRow';
 import MenuItemForm from '../components/MenuItemForm';
@@ -34,11 +27,8 @@ const MenuItemsScreen = () => {
   }, []);
 
   // Custom change handler for the price field.
-  // It allows digits and at most one decimal point.
   const handlePriceChange = (text) => {
-    // Remove any characters except digits and period.
     let formatted = text.replace(/[^0-9.]/g, '');
-    // Ensure only one decimal point is present.
     const parts = formatted.split('.');
     if (parts.length > 2) {
       formatted = parts[0] + '.' + parts.slice(1).join('');
@@ -47,7 +37,6 @@ const MenuItemsScreen = () => {
   };
 
   // Custom change handler for the stock field.
-  // It allows only digits (integers).
   const handleStockChange = (text) => {
     const formatted = text.replace(/\D/g, '');
     setFormStock(formatted);
@@ -157,17 +146,18 @@ const MenuItemsScreen = () => {
           onCancel={handleCancel}
         />
       )}
-      {/* Only show "Add New Item" button and list if not in edit mode */}
       {(!editingItem) && (
         <>
           {!showAddForm && (
-            <Button title="Add New Item" onPress={() => setShowAddForm(true)} />
+            <TouchableOpacity style={styles.addNewButton} onPress={() => setShowAddForm(true)}>
+              <Text style={styles.addNewButtonText}>Add New Item</Text>
+            </TouchableOpacity>
           )}
           <FlatList
             data={items}
-            keyExtractor={item => item.id}
+            keyExtractor={(item) => item.id}
             renderItem={({ item }) => (
-              <MenuItemRow item={item} onPress={handleItemPress} />
+              <MenuItemRow item={item} onPress={handleItemPress} currency="P" />
             )}
             style={styles.list}
             contentContainerStyle={styles.listContent}
@@ -178,24 +168,39 @@ const MenuItemsScreen = () => {
   );
 };
 
+export default MenuItemsScreen;
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    backgroundColor: '#fff'
+    backgroundColor: '#fdf5e6', // Cream background
   },
   title: {
     fontSize: 28,
     textAlign: 'center',
-    marginBottom: 16
+    marginBottom: 16,
+    color: '#003B6F', // Blue text
+    fontWeight: 'bold',
+  },
+  addNewButton: {
+    backgroundColor: '#800000', // Maroon background
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    alignSelf: 'center',
+    marginBottom: 16,
+  },
+  addNewButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
   list: {
     flex: 1,
-    marginTop: 16
+    marginTop: 16,
   },
   listContent: {
-    paddingBottom: 16
-  }
+    paddingBottom: 16,
+  },
 });
-
-export default MenuItemsScreen;

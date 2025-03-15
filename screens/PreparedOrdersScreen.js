@@ -1,11 +1,21 @@
 // screens/PreparedOrdersScreen.js
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useLayoutEffect } from 'react';
 import { View, Text, FlatList, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { collection, onSnapshot, writeBatch, doc } from 'firebase/firestore';
 import { db } from '../services/firebaseConfig';
 
-const PreparedOrdersScreen = () => {
+const PreparedOrdersScreen = ({ navigation }) => {
   const [orders, setOrders] = useState([]);
+
+  // Set header options: navy background, centered title in cream text.
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerTitle: 'Prepared Orders',
+      headerTitleAlign: 'center',
+      headerStyle: { backgroundColor: '#003B6F' },
+      headerTitleStyle: { color: '#fdf5e6', fontSize: 22, fontWeight: 'bold' },
+    });
+  }, [navigation]);
 
   useEffect(() => {
     const unsubscribe = onSnapshot(collection(db, 'preparedOrders'), (snapshot) => {
@@ -32,9 +42,7 @@ const PreparedOrdersScreen = () => {
 
               // Reference for new document in canceledOrder collection
               const canceledRef = doc(collection(db, 'canceledOrder'));
-              // Prepare data: update status to "canceled"
               const canceledData = { ...order, status: 'canceled' };
-              // Remove the id property since it will be auto-generated in canceledOrder
               delete canceledData.id;
               batch.set(canceledRef, canceledData);
 
@@ -67,23 +75,19 @@ const PreparedOrdersScreen = () => {
   };
 
   const renderOrder = ({ item }) => {
-    // Extract item names from the items array (each element is a map)
+    // Extract item names from the items array
     const itemNames = Array.isArray(item.items)
       ? item.items.map(orderItem => orderItem.name).join(', ')
       : 'No items';
 
     return (
-      <TouchableOpacity 
-        style={styles.orderContainer} 
-        onPress={() => handleCancelOrder(item)}
-      >
+      <TouchableOpacity style={styles.orderContainer} onPress={() => handleCancelOrder(item)}>
         <Text style={styles.orderText}>Order Number: {item.orderNumber || 'N/A'}</Text>
         <Text style={styles.orderText}>Order ID: {item.id}</Text>
         <Text style={styles.orderText}>Timeslot: {item.timeslot || 'N/A'}</Text>
         <Text style={styles.orderText}>Items: {itemNames}</Text>
-        <Text style={styles.orderText}>
-          Total Cost: ${item.totalCost ? item.totalCost.toFixed(2) : '0.00'}
-        </Text>
+        {/* Price locked in bottom-right */}
+        <Text style={styles.priceText}>P{item.totalCost ? item.totalCost.toFixed(2) : '0.00'}</Text>
       </TouchableOpacity>
     );
   };
@@ -104,15 +108,19 @@ const PreparedOrdersScreen = () => {
   );
 };
 
+export default PreparedOrdersScreen;
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
+    backgroundColor: '#fdf5e6', // Cream background
   },
   noOrdersText: {
     fontSize: 20,
     textAlign: 'center',
     marginTop: 20,
+    color: '#003B6F', // Blue text
   },
   listContent: {
     paddingBottom: 16,
@@ -120,15 +128,24 @@ const styles = StyleSheet.create({
   orderContainer: {
     padding: 12,
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: '#003B6F', // Blue border
     borderRadius: 6,
     marginBottom: 8,
-    backgroundColor: '#fafafa',
+    backgroundColor: '#fdf5e6', // Cream background
+    position: 'relative', // For absolute positioning of price
   },
   orderText: {
     fontSize: 16,
     marginVertical: 2,
+    color: '#003B6F', // Blue text
+  },
+  // Price text positioned in the bottom-right
+  priceText: {
+    position: 'absolute',
+    right: 12,
+    bottom: 12,
+    fontSize: 20, // Bigger font size
+    fontWeight: 'bold',
+    color: '#003B6F', // Blue text
   },
 });
-
-export default PreparedOrdersScreen;
