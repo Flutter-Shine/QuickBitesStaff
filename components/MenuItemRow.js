@@ -5,7 +5,7 @@ import { TouchableOpacity, Text, StyleSheet } from 'react-native';
 const MenuItemRow = ({ item, onPress }) => (
   <TouchableOpacity style={styles.itemRow} onPress={() => onPress(item)}>
     <Text style={styles.itemText}>
-      {item.name} - ${item.price} - Stock: {item.stock}
+      {item.name} - P{item.price} - Stock: {item.stock}
     </Text>
   </TouchableOpacity>
 );
