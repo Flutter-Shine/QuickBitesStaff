@@ -90,9 +90,7 @@ const PendingOrdersScreen = ({ navigation }) => {
         <Text style={styles.orderText}>Order Number: {item.orderNumber || 'N/A'}</Text>
         <Text style={styles.orderText}>Timeslot: {item.timeslot || 'N/A'}</Text>
         <Text style={styles.orderText}>Items: {itemDetails}</Text>
-        <Text style={styles.priceText}>
-          P{item.totalCost ? item.totalCost.toFixed(2) : '0.00'}
-        </Text>
+        <Text style={styles.priceText}>Price: P{item.totalCost ? item.totalCost.toFixed(2) : '0.00'}</Text>
       </TouchableOpacity>
     );
   };
@@ -140,13 +138,11 @@ const styles = StyleSheet.create({
     marginVertical: 2,
     color: '#003B6F', // Blue text
   },
-  // Price locked to bottom right
+  // Price text - bold styling
   priceText: {
-    position: 'absolute',
-    right: 12,
-    bottom: 12,
-    fontSize: 26,      // Bigger font size
+    fontSize: 20,
+    marginVertical: 2,
     fontWeight: 'bold',
-    color: '#003B6F',  // Blue text
+    color: '#003B6F', // Blue text
   },
 });
