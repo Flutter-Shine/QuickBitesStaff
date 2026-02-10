@@ -79,9 +79,9 @@ const PendingOrdersScreen = ({ navigation }) => {
   };
 
   const renderOrder = ({ item }) => {
-    // Extract names from the items array
-    const itemNames = Array.isArray(item.items)
-      ? item.items.map(orderItem => orderItem.name).join(', ')
+    // Extract names and quantities from the items array
+    const itemDetails = Array.isArray(item.items)
+      ? item.items.map(orderItem => `${orderItem.name} (x${orderItem.quantity || 1})`).join(', ')
       : 'No items';
 
     return (
@@ -89,7 +89,7 @@ const PendingOrdersScreen = ({ navigation }) => {
         <Text style={styles.orderText}>Order ID: {item.id}</Text>
         <Text style={styles.orderText}>Order Number: {item.orderNumber || 'N/A'}</Text>
         <Text style={styles.orderText}>Timeslot: {item.timeslot || 'N/A'}</Text>
-        <Text style={styles.orderText}>Items: {itemNames}</Text>
+        <Text style={styles.orderText}>Items: {itemDetails}</Text>
         <Text style={styles.priceText}>
           P{item.totalCost ? item.totalCost.toFixed(2) : '0.00'}
         </Text>
@@ -121,7 +121,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fdf5e6', // Cream background
   },
   noOrdersText: {
-    fontSize: 20,
+    fontSize: 26,
     textAlign: 'center',
     marginTop: 20,
     color: '#003B6F', // Blue text
@@ -136,7 +136,7 @@ const styles = StyleSheet.create({
     position: 'relative', // To position the price absolutely
   },
   orderText: {
-    fontSize: 16,
+    fontSize: 20,
     marginVertical: 2,
     color: '#003B6F', // Blue text
   },
@@ -145,7 +145,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: 12,
     bottom: 12,
-    fontSize: 20,      // Bigger font size
+    fontSize: 26,      // Bigger font size
     fontWeight: 'bold',
     color: '#003B6F',  // Blue text
   },
